@@ -103,16 +103,17 @@ public class DBManager
      * <p>
      *     The SQL query is passed to this method through the parameter <i>query</i>.
      *     This method executes the query blindly; no safety or validity checks are performed at all.
-     *     It would be a good idea to write external code to verify the correctness of the query.
+     *     It would be a good idea to write external code to verify the correctness of the query before
+     *     invoking this method.
      * </p>
      *
      * @param query The SQL query to execute
-     * @throws SQLException This static class handles no exceptions. If the query you pass to this method is dodgy,
+     * @throws SQLException This class handles no exceptions. If the query you pass to this method is dodgy,
      * you wear the consequences.
      */
     public void Execute (String query) throws SQLException
     {
-        Connection connection = null;
+        Connection connection;
         Statement statement = null;
 
         try
@@ -124,24 +125,30 @@ public class DBManager
         finally
         {
             closeQuietly(statement);
-            closeQuietly(connection);
         }
     }
 
 
     /**
-     * Executes the SQL and return the key of the affected row
-     * Obviously .. the query can only be one INSERT only.
+     * <p>
+     *     Inserts a row into the database and returns the primary key of the newly created row.
+     * </p>
      *
-     * @param query the query to execute
-     * @return the pri key of the newly created row
-     * @throws SQLException - this class does not handle faulty queries
+     * <p>
+     *     No checks are performed on the SQL query that is passed into this method. You could conceivably
+     *     throw in a SELECT or a DELETE instead. This method is not guaranteed to behave correctly if any
+     *     query other than an INSERT is executed.
+     * </p>
+     *
+     * @param query The SQL [INSERT] query to execute.
+     * @return The primary key of the newly created row.
+     * @throws SQLException This class does not handle faulty queries.
      */
-    public int ExecuteReturnKey (String query) throws SQLException
+    public int InsertAndReturnKey(String query) throws SQLException
     {
         int res = -1;
-        Connection connection = null;
-        PreparedStatement statement = null;
+        Connection connection;
+        PreparedStatement statement;
         ResultSet generated_keys = null;
 
         try
@@ -151,20 +158,18 @@ public class DBManager
             int affected_rows = statement.executeUpdate();
 
             if (affected_rows != 1)
-                throw new SQLException("DBManager.ExecuteReturnKey - Insert into database failed. Affected rows: " + affected_rows + ": " + query);
+                throw new SQLException("DBManager.InsertAndReturnKey - Insert into database failed. Affected rows: " + affected_rows + ": " + query);
 
             generated_keys = statement.getGeneratedKeys();
 
             if (generated_keys.next())
                 res = generated_keys.getInt(1);
             else
-                throw new SQLException("DBManager.ExecuteReturnKey - Creating user failed, no ID obtained.");
+                throw new SQLException("DBManager.InsertAndReturnKey - Creating row failed, no ID obtained.");
         }
         finally
         {
             closeQuietly(generated_keys);
-            closeQuietly(statement);
-            closeQuietly(connection);
         }
 
         return res;
@@ -173,13 +178,13 @@ public class DBManager
 
     /**
      * <p>
-     *     Executes an SQL query and returns the results in a resultSet.
+     *     Executes an SQL SELECT query and returns the results in a ResultSet.
      * </p>
      *
-     * @param query The SELECT query to execute
+     * @param query The SELECT query to execute.
      * @param connection The object that represents a connection to the database. It is returned by DBManager.Connect()
      * @return The results of the query, stored in a java.sql.ResultSet object.
-     * @throws SQLException This class does not handle exceptions at all.
+     * @throws SQLException This class does not handle exceptions at all. Don't feed this method INSERTs or DELETEs please.
      */
     public static ResultSet ExecuteQuery (String query, Connection connection) throws SQLException
     {
@@ -218,9 +223,11 @@ public class DBManager
 
 
     /**
-     * Disconnects the given connection from the database.
+     * <p>
+     *     Disconnects <i>connection</i> from the database.
+     * </p>
      *
-     * @param connection The connection to disconnect
+     * @param connection The connection to disconnect.
      */
     public static void Disconnect (Connection connection)
     {
@@ -229,7 +236,9 @@ public class DBManager
 
 
     /**
-     * Disconnect the ResultSet from the database.
+     * <p>
+     *     Disconnects <i>results</i> from the database.
+     * </p>
      *
      * @param results The ResultSet to disconnect.
      */
@@ -240,20 +249,23 @@ public class DBManager
 
 
     /**
-     * Sssh!
+     * <p>
+     *     Quietly closes an instance of a ResultSet. The Statement and Connection that are
+     *     associated with the ResultSet are also closed.
+     * </p>
      *
-     * Utility functions to close database connections without a fuss.
-     *
-     * @param res - the database entity to close
+     * @param result The instance to close.
      */
-    private static void closeQuietly (ResultSet res)
+    private static void closeQuietly (ResultSet result)
     {
-        if (res == null)
+        if (result == null)
             return;
 
         try
         {
-            res.close();
+            Statement statement = result.getStatement();
+            result.close();
+            closeQuietly(statement);
         }
         catch (Exception e)
         {
@@ -261,14 +273,22 @@ public class DBManager
         }
     }
 
-    private static void closeQuietly (Connection res)
+
+    /**
+     * <p>
+     *     Quietly closes a Connection instance.
+     * </p>
+     *
+     * @param connection The instance to close.
+     */
+    private static void closeQuietly (Connection connection)
     {
-        if (res == null)
+        if (connection == null)
             return;
 
         try
         {
-            res.close();
+            connection.close();
         }
         catch (Exception e)
         {
@@ -276,14 +296,24 @@ public class DBManager
         }
     }
 
-    private static void closeQuietly (Statement res)
+
+    /**
+     * <p>
+     *     Quietly closes a Statement instance, including its associated Connection.
+     * </p>
+     *
+     * @param statement The instance to close.
+     */
+    private static void closeQuietly (Statement statement)
     {
-        if (res == null)
+        if (statement == null)
             return;
 
         try
         {
-            res.close();
+            Connection connection = statement.getConnection();
+            statement.close();
+            closeQuietly(connection);
         }
         catch (Exception e)
         {
