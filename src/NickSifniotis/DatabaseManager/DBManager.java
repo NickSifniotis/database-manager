@@ -23,10 +23,16 @@ import java.sql.*;
 public class DBManager
 {
     /** The path to the database file. **/
-    private String database_path = "database";
+    private String database_path;
 
     /** The database filename. **/
-    private String database_name = "database.db";
+    private String database_name;
+
+    /** The defalt database filename. **/
+    private final String default_name = "database.db";
+
+    /** The default path to the database. **/
+    private final String default_path = "database/";
 
 
     /**
@@ -36,7 +42,7 @@ public class DBManager
      */
     public DBManager()
     {
-        __set_db_location("database/", "database.db");
+        __set_db_location(default_path, default_name);
     }
 
 
@@ -54,6 +60,12 @@ public class DBManager
      */
     public DBManager(String database_path, String database_name)
     {
+        if (database_name.equals(""))
+            database_name = default_name;
+
+        if (database_path.equals(""))
+            database_path = default_path;
+
         if (database_path.charAt(database_path.length() - 1) != '/')
             database_path += "/";
 

@@ -11,30 +11,20 @@ package NickSifniotis.DatabaseManager;
  */
 public class DBManagerFactory
 {
-    private static String database_name;
-    private static String database_path;
-
-    public void NewDBManager()
+    /**
+     * <p>
+     *     Create a new instance of a DBManager object.
+     * </p>
+     * 
+     * <p>
+     *     This factory method uses an intermediate data structure, <to be finished>
+     * </p>
+     * @TODO: DBManagerBuilder and DBMAnagerFactory can be merged into the same class, because one class
+     * can have both static and nonstatic methods.
+     * @return An instance of something (TBA) that will be used to construct DBManager class instances.
+     */
+    public static DBManagerBuilder NewDBManager()
     {
-        database_name = "";
-        database_path = "";
-    }
-
-
-    public void Name(String name)
-    {
-        database_name = name;
-    }
-
-
-    public void Path(String path)
-    {
-        database_path = path;
-    }
-
-
-    public static DBManager build()
-    {
-        return new DBManager(database_path, database_name);
+        return new DBManagerBuilder();
     }
 }
