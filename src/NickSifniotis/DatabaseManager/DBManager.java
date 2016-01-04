@@ -1,29 +1,64 @@
 package NickSifniotis.DatabaseManager;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 
 
 /**
  * <p>
- *     Static class that provides a clean, easy interface to the SQLite library.
+ *     A simple class that provides a clean, easy interface to the SQLite library.
  * </p>
  *
  * <p>
- *     @TODO it might be elite to change this from a static class to the ordinary sort,
- *     so as to allow the use of multiple databases in the same application.
+ *     Instances of this class are associated with a physical database file. Applications that use
+ *     multiple databases will need to maintain multiple instances of DBManager.
  * </p>
  *
  * @author Nick Sifniotis u5809912
  * @since 31/08/2015
- * @version 2.0.0
+ * @version 3.0.0
  */
-class DBManager
+public class DBManager
 {
     /** The path to the database file. **/
-    private static String database_path = "database";
+    private String database_path = "database";
 
     /** The database filename. **/
-    private static String database_name = "database.db";
+    private String database_name = "database.db";
+
+
+    /**
+     * <p>
+     *     Constructor that connects to the default database location.
+     * </p>
+     */
+    public DBManager()
+    {
+        __set_db_location("database/", "database.db");
+    }
+
+
+    /**
+     * <p>
+     *     Constructor that creates an instance connecting to a user-specified database.
+     * </p>
+     *
+     * <p>
+     *     If the path to the database does not exist, the constructor will attempt to create it.
+     * </p>
+     *
+     * @param database_path The path where the database file is found.
+     * @param database_name The name of the database file.
+     */
+    public DBManager(String database_path, String database_name)
+    {
+        if (database_path.charAt(database_path.length() - 1) != '/')
+            database_path += "/";
+
+        __set_db_location(database_path, database_name);
+    }
 
 
     /**
@@ -32,20 +67,29 @@ class DBManager
      * </p>
      *
      * <p>
-     *     A call to this method is not <i>required</i>; DBManager is happy to use the default values
-     *     "database/database.db".
-     * </p>
-     *
-     * <p>
-     *     However, if you do intend to use a database in another location, be sure to invoke this method
-     *     <i>before</i> attempting to perform any operations on the database.
+     *     If the path does not exist, this method will attempt to create it.
      * </p>
      *
      * @param new_path The path where the database file will be located, without the trailing '/'.
      * @param new_name The name of the database file.
      */
-    public static void SetDBLocation (String new_path, String new_name)
+    private void __set_db_location (String new_path, String new_name)
     {
+        Path path = Paths.get(new_path);
+        if (!Files.isDirectory(path))
+        {
+            try
+            {
+                Files.createDirectory(path);
+            }
+            catch (Exception e)
+            {
+                System.out.println("Error creating path for database file: " + new_path);
+                System.out.println("Fatal error: Terminating.");
+                System.exit(1);
+            }
+        }
+
         database_name = new_name;
         database_path = new_path;
     }
@@ -66,7 +110,7 @@ class DBManager
      * @throws SQLException This static class handles no exceptions. If the query you pass to this method is dodgy,
      * you wear the consequences.
      */
-    public static void Execute (String query) throws SQLException
+    public void Execute (String query) throws SQLException
     {
         Connection connection = null;
         Statement statement = null;
@@ -93,7 +137,7 @@ class DBManager
      * @return the pri key of the newly created row
      * @throws SQLException - this class does not handle faulty queries
      */
-    public static int ExecuteReturnKey (String query) throws SQLException
+    public int ExecuteReturnKey (String query) throws SQLException
     {
         int res = -1;
         Connection connection = null;
@@ -150,20 +194,19 @@ class DBManager
 
     /**
      * <p>
-     *      Connects to the database, and
-     *      returns a connection object that can be used to process SQL and so forth.
+     *      Get a connection object from the database that can be used to process SQL and so forth.
      * </p>
      *
-     * @throws SQLException - SQL Exceptions aren't handled by this class.
+     * @throws SQLException Exceptions aren't handled by this class.
      * @return A connection object that is connected to the database. Remember to close when finished!
      */
-    public static Connection Connect() throws SQLException
+    public Connection Connect() throws SQLException
     {
         Connection connection = null;
         try
         {
             Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:" + database_path + "/" + database_name);
+            connection = DriverManager.getConnection("jdbc:sqlite:" + database_path + database_name);
         }
         catch (ClassNotFoundException e)
         {
