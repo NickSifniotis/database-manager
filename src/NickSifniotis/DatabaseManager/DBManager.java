@@ -109,6 +109,28 @@ public class DBManager
 
     /**
      * <p>
+     *     Hard reset of the database. The file is completely erased; all data and tables are permanently deleted.
+     * </p>
+     */
+    public void Reset()
+    {
+        Path database_filepath = Paths.get(database_path + database_name);
+
+        try
+        {
+            Files.deleteIfExists(database_filepath);
+        }
+        catch (Exception e)
+        {
+            System.out.println("Unable to delete database file! Critical error - terminating.");
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+
+    /**
+     * <p>
      *     Executes an SQL query on the database.
      * </p>
      *

@@ -5,7 +5,7 @@ import NickSifniotis.DatabaseManager.DBManagerFactory;
 
 /**
  * <p>
- *     Testing module for the DatabaseManager package.
+ *     Really poor testing module for the DatabaseManager package.
  * </p>
  *
  * @author Nick Sifniotis u5809912
@@ -21,6 +21,7 @@ public class Tester
 
         try
         {
+            default_database.Reset();
             default_database.Execute("DROP TABLE IF EXISTS t");
             default_database.Execute("CREATE TABLE t(x INTEGER PRIMARY KEY ASC, y, z); ");
             default_database.Execute("INSERT INTO t (y, x) VALUES ('hello', 2)");
