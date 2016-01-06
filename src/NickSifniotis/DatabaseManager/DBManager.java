@@ -198,7 +198,7 @@ public class DBManager
      * @return The results of the query, stored in a java.sql.ResultSet object.
      * @throws SQLException This class does not handle exceptions at all. Don't feed this method INSERTs or DELETEs please.
      */
-    public static ResultSet ExecuteQuery (String query, Connection connection) throws SQLException
+    public ResultSet ExecuteQuery (String query, Connection connection) throws SQLException
     {
         ResultSet results = null;
 
@@ -241,7 +241,7 @@ public class DBManager
      *
      * @param connection The connection to disconnect.
      */
-    public static void Disconnect (Connection connection)
+    public void Disconnect (Connection connection)
     {
         closeQuietly(connection);
     }
@@ -254,7 +254,7 @@ public class DBManager
      *
      * @param results The ResultSet to disconnect.
      */
-    public static void Disconnect (ResultSet results)
+    public void Disconnect (ResultSet results)
     {
         closeQuietly(results);
     }
@@ -268,7 +268,7 @@ public class DBManager
      *
      * @param result The instance to close.
      */
-    private static void closeQuietly (ResultSet result)
+    private void closeQuietly (ResultSet result)
     {
         if (result == null)
             return;
@@ -293,7 +293,7 @@ public class DBManager
      *
      * @param connection The instance to close.
      */
-    private static void closeQuietly (Connection connection)
+    private void closeQuietly (Connection connection)
     {
         if (connection == null)
             return;
@@ -316,7 +316,7 @@ public class DBManager
      *
      * @param statement The instance to close.
      */
-    private static void closeQuietly (Statement statement)
+    private void closeQuietly (Statement statement)
     {
         if (statement == null)
             return;
